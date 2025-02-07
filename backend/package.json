@@ -1,0 +1,35 @@
+{
+  "name": "kilo-zone-backend",
+  "version": "0.0.0",
+  "private": true,
+  "scripts": {
+    "deploy": "wrangler deploy",
+    "dev": "wrangler dev",
+    "start": "wrangler dev",
+    "cf-typegen": "wrangler types",
+    "migrate": "drizzle-kit generate & drizzle-kit migrate",
+    "migrate:local": "drizzle-kit generate & wrangler d1 migrations apply kilo_zone_db"
+  },
+  "devDependencies": {
+    "@cloudflare/workers-types": "^4.20241230.0",
+    "@types/highlight.js": "^9.12.4",
+    "@types/markdown-it": "^14.1.2",
+    "@types/node": "^22.10.3",
+    "drizzle-kit": "^0.30.1",
+    "tsx": "^4.19.2",
+    "typescript": "^5.5.2",
+    "wrangler": "^3.99.0"
+  },
+  "dependencies": {
+    "@hono/zod-validator": "^0.4.2",
+    "badwords-list": "^2.0.1-4",
+    "dotenv": "^16.4.7",
+    "drizzle-orm": "^0.38.3",
+    "drizzle-zod": "^0.6.1",
+    "highlight.js": "^11.11.1",
+    "hono": "^4.6.15",
+    "markdown-it": "^14.1.0",
+    "postal-mime": "^2.3.2",
+    "zod": "^3.24.1"
+  }
+}

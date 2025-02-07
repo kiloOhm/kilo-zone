@@ -1,0 +1,17 @@
+{
+	"name": "kilo-zone-cli",
+	"module": "index.ts",
+	"type": "module",
+	"devDependencies": {
+		"@types/bun": "latest",
+		"@types/jsonwebtoken": "^9.0.7"
+	},
+	"peerDependencies": {
+		"typescript": "^5.0.0"
+	},
+	"dependencies": {
+		"jsonwebtoken": "^9.0.2",
+		"keytar": "^7.9.0",
+		"zod": "^3.24.1"
+	}
+}

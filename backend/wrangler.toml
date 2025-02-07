@@ -1,0 +1,75 @@
+#:schema node_modules/wrangler/config-schema.json
+name = "kilo-zone-backend"
+main = "src/index.ts"
+compatibility_date = "2024-12-30"
+
+routes = [
+  { pattern = "api.kilo.zone", custom_domain = true }
+]
+
+# Workers Logs
+# Docs: https://developers.cloudflare.com/workers/observability/logs/workers-logs/
+# Configuration: https://developers.cloudflare.com/workers/observability/logs/workers-logs/#enable-workers-logs
+[observability]
+enabled = true
+
+# Automatically place your workloads in an optimal location to minimize latency.
+# If you are running back-end logic in a Worker, running it closer to your back-end infrastructure
+# rather than the end user may result in better performance.
+# Docs: https://developers.cloudflare.com/workers/configuration/smart-placement/#smart-placement
+[placement]
+mode = "smart"
+
+# Variable bindings. These are arbitrary, plaintext strings (similar to environment variables)
+# Docs:
+# - https://developers.cloudflare.com/workers/wrangler/configuration/#environment-variables
+# Note: Use secrets to store sensitive data.
+# - https://developers.cloudflare.com/workers/configuration/secrets/
+[vars]
+DEV = false
+AUTH_URL = "https://dev-3drwq1geovbl2vjr.eu.auth0.com"
+CLIENT_ID = "RP8Ls2wA4DpUDBsCz7OqG97VQYbKrEKQ"
+REDIRECT_URI = "https://kilo.zone/auth/callback"
+API_AUDIENCE = "kilo.zone/api"
+HOSTNAME = "api.kilo.zone"
+MAX_FILE_SIZE = 104857600 # 100MB
+
+# Bind a D1 database. D1 is Cloudflare’s native serverless SQL database.
+# Docs: https://developers.cloudflare.com/workers/wrangler/configuration/#d1-databases
+[[d1_databases]]
+binding = "KILO_ZONE_DB"
+database_name = "kilo_zone_db"
+database_id = "fc0439c0-cfdd-4cca-9d74-5dfbef78664c"
+migrations_dir = "drizzle"
+
+# Bind a Durable Object. Durable objects are a scale-to-zero compute primitive based on the actor model.
+# Durable Objects can live for as long as needed. Use these when you need a long-running "server", such as in realtime apps.
+# Docs: https://developers.cloudflare.com/workers/wrangler/configuration/#durable-objects
+[[durable_objects.bindings]]
+name = "CHAT_HANDLER_DO"
+class_name = "ChatHandlerDO"
+
+# Durable Object migrations.
+# Docs: https://developers.cloudflare.com/workers/wrangler/configuration/#migrations
+[[migrations]]
+tag = "v2"
+new_classes = ["ChatHandlerDO"]
+
+# Bind a KV Namespace. Use KV as persistent storage for small key-value pairs.
+# Docs: https://developers.cloudflare.com/workers/wrangler/configuration/#kv-namespaces
+[[kv_namespaces]]
+binding = "KILO_ZONE_CACHE"
+id = "cf0821e5320445408c60142a3414a76c"
+preview_id = "be61a374fe6d48f9931f4a540497a439"
+
+# Bind an R2 Bucket. Use R2 to store arbitrarily large blobs of data, such as files.
+# Docs: https://developers.cloudflare.com/workers/wrangler/configuration/#r2-buckets
+[[r2_buckets]]
+binding = "KILO_ZONE_OBJECT_STORAGE"
+bucket_name = "kilo-zone-object-storage"
+# preview_bucket_name = "kilo-zone-object-storage-dev"
+
+[triggers]
+crons = [
+	"0 0 * * *"
+]

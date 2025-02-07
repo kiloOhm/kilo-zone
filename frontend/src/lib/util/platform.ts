@@ -24,7 +24,7 @@ export function usePlatform(platform: Readonly<App.Platform> | undefined) {
                 );
               }
             }
-          : platform.env.BACKEND?.fetch,
+          : platform.env.BACKEND?.fetch.bind(platform.env.BACKEND),
       },
     },
   };

@@ -5,15 +5,9 @@ import { useDb } from "../../db";
 import {
   emailPageDataDBSchema,
   emailPageDataSelectSchema,
-  GenericPage,
-  InsertPage,
-  InsertPageData,
-  Page,
-  PageData,
   pageDBSchema,
   pageIdPrefix,
   pageSelectSchema,
-  PageType,
   pageTypes,
   pastePageDataDBSchema,
   pastePageDataSelectSchema,
@@ -26,6 +20,7 @@ import { array as badwords } from "badwords-list";
 import { randomString } from "../../util/crypto";
 import { pastePrefix, useObjectsService } from "../objects/objects.service";
 import { drizzle } from "drizzle-orm/d1";
+import { GenericPage, Page, PageInput, PageType } from "./pages";
 
 const forbiddenPaths: string[] = [];
 
@@ -94,7 +89,7 @@ export function usePageService(env: Ctx["Bindings"]) {
               } as Page<"email">;
             case "paste":
               if (parsedPaste.status === "rejected") throw parsedPaste.reason;
-              const data = parsedPaste.value ?? ({} as PageData<"paste">);
+              const data = (parsedPaste.value ?? {}) as Page<"paste">["data"];
               const { getSignedLink } = useObjectsService(env);
               data.uploadUrl = await getSignedLink(parsedPage.value.id, 1 * 60 * 60 * 1000, "upload"); // 1 hour
               return {
@@ -177,7 +172,7 @@ export function usePageService(env: Ctx["Bindings"]) {
       }
       throw new Error("Failed to generate random path after 10 iterations");
     },
-    async createPage<T extends PageType>(type: T, data: InsertPage<T>, ownerId: string) {
+    async createPage<T extends PageType>(type: T, data: PageInput<T>, ownerId: string) {
       if (data.path) {
         if (!(await this.checkPathAvailability(data.path))?.length) {
           throw new BadRequestError("Path not available");
@@ -205,7 +200,7 @@ export function usePageService(env: Ctx["Bindings"]) {
         console.error("Failed to create page");
         throw new Error("Failed to create page");
       }
-      let pageData: PageData<T> | undefined = undefined;
+      let pageData: Page<T>["data"] | undefined = undefined;
       try {
         if (type === "paste") {
           const [newPastePageData] = await db
@@ -220,18 +215,18 @@ export function usePageService(env: Ctx["Bindings"]) {
           if (!newPastePageData) {
             throw new Error("Failed to create paste page data");
           }
-          if (!(data.data as InsertPageData<"paste">)?.direct) {
+          if (!(data.data as PageInput<"paste">["data"])?.direct) {
             const { getSignedLink } = useObjectsService(env);
             const uploadUrl = await getSignedLink(id, 1 * 60 * 60 * 1000, "upload"); // 1 hour
             pageData = (await pastePageDataSelectSchema.parseAsync({
               ...newPastePageData,
               uploadUrl,
-            })) as PageData<T>;
+            })) as Page<T>["data"];
           } else {
-            pageData = (await pastePageDataSelectSchema.parseAsync(newPastePageData)) as PageData<T>;
+            pageData = (await pastePageDataSelectSchema.parseAsync(newPastePageData)) as Page<T>["data"];
           }
         } else if (type === "email") {
-          let localPart = (data.data as InsertPageData<"email">).localPart;
+          let localPart = (data.data as PageInput<"email">["data"]).localPart;
           if (localPart) {
             if (!(await this.checkLocalPartAvailability(localPart))?.length) {
               throw new BadRequestError("Local part not available");
@@ -250,9 +245,9 @@ export function usePageService(env: Ctx["Bindings"]) {
           if (!newEmailPageData) {
             throw new Error("Failed to create email page data");
           }
-          pageData = (await emailPageDataSelectSchema.parseAsync(newEmailPageData)) as PageData<T>;
+          pageData = (await emailPageDataSelectSchema.parseAsync(newEmailPageData)) as Page<T>["data"];
         } else if (type === "redirect") {
-          const additionalRedirectData = data.data as InsertPageData<"redirect">;
+          const additionalRedirectData = data.data as PageInput<"redirect">["data"];
           if (!additionalRedirectData.targetUrl) {
             throw new Error("Missing target url");
           }
@@ -268,7 +263,7 @@ export function usePageService(env: Ctx["Bindings"]) {
           if (!newRedirectPageData) {
             throw new Error("Failed to create redirect page data");
           }
-          pageData = (await redirectPageDataSelectSchema.parseAsync(newRedirectPageData)) as PageData<T>;
+          pageData = (await redirectPageDataSelectSchema.parseAsync(newRedirectPageData)) as Page<T>["data"];
         } else if (type === "chat") {
         } else {
           throw new Error("Invalid page type");

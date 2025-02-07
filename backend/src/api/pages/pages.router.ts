@@ -6,17 +6,14 @@ import { BadRequestError, ForbiddenError } from "../../util/errors";
 import { z } from "zod";
 import {
   emailPageDataInsertSchema,
-  InsertPage,
-  InsertPageData,
-  PageData,
   pageInsertSchema,
-  PageType,
   pastePageDataInsertSchema,
   redirectPageDataInsertSchema,
 } from "./pages.db";
 import { rateLimit } from "../../util/ratelimit";
 import { zValidator } from "@hono/zod-validator";
 import { useObjectsService } from "../objects/objects.service";
+import { Page, PageType, PageInput } from "./pages";
 
 // stricter rate limit to prevent enumeration
 const { limit: availablePathLimit } = rateLimit({
@@ -97,12 +94,13 @@ export const pagesRouter = new Hono<Ctx>()
       "json",
       z.object({
         ...pageInsertSchema.shape,
+        type: z.literal("paste"),
         data: pastePageDataInsertSchema.omit({ direct: true }).optional(),
       })
     ),
     async (c) => {
       const data = c.req.valid("json");
-      return c.json(await createPageHandler("paste", c, data as InsertPage<"paste">));
+      return c.json(await createPageHandler("paste", c, data as PageInput<"paste">));
     }
   )
   .post(
@@ -111,6 +109,7 @@ export const pagesRouter = new Hono<Ctx>()
       "form",
       z.object({
         ...pageInsertSchema.shape,
+        type: z.literal("paste"),
         data: pastePageDataInsertSchema.omit({ direct: true }).optional(),
         file: z.any(),
       })
@@ -133,12 +132,12 @@ export const pagesRouter = new Hono<Ctx>()
         throw new BadRequestError("Invalid body. File must be a file");
       }
       const { upload } = useObjectsService(c.env);
-      const data = c.req.valid("form") as InsertPage<"paste">;
-      if (!data.data) data.data = {} as InsertPageData<"paste">;
+      const data = c.req.valid("form") as PageInput<"paste">;
+      if (!data.data) data.data = {} as PageInput<"paste">["data"];
       data.data.direct = true;
-      const newPage = await createPageHandler("paste", c, data as InsertPage<"paste">);
+      const newPage = await createPageHandler("paste", c, data as PageInput<"paste">);
       const { mimetype, size, fileName } = await upload(newPage.id, null, file);
-      if (!newPage.data) newPage.data = {} as PageData<"paste">;
+      if (!newPage.data) newPage.data = {} as Page<"paste">["data"];
       newPage.data.mimetype = mimetype;
       newPage.data.size = size;
       newPage.data.fileName = fileName;
@@ -151,12 +150,13 @@ export const pagesRouter = new Hono<Ctx>()
       "json",
       z.object({
         ...pageInsertSchema.shape,
+        type: z.literal("email"),
         data: emailPageDataInsertSchema,
       })
     ),
     async (c) => {
       const data = c.req.valid("json");
-      return c.json(await createPageHandler("email", c, data as InsertPage<"email">));
+      return c.json(await createPageHandler("email", c, data as PageInput<"email">));
     }
   )
   .post(
@@ -165,12 +165,13 @@ export const pagesRouter = new Hono<Ctx>()
       "json",
       z.object({
         ...pageInsertSchema.shape,
+        type: z.literal("redirect"),
         data: redirectPageDataInsertSchema,
       })
     ),
     async (c) => {
       const data = c.req.valid("json");
-      return c.json(await createPageHandler("redirect", c, data as InsertPage<"redirect">));
+      return c.json(await createPageHandler("redirect", c, data as PageInput<"redirect">));
     }
   )
   .post(
@@ -179,12 +180,13 @@ export const pagesRouter = new Hono<Ctx>()
       "json",
       z.object({
         ...pageInsertSchema.shape,
+        type: z.literal("chat"),
         data: z.undefined(),
       })
     ),
     async (c) => {
       const data = c.req.valid("json");
-      return c.json(await createPageHandler("chat", c, data as InsertPage<"chat">));
+      return c.json(await createPageHandler("chat", c, data as PageInput<"chat">));
     }
   )
 
@@ -216,7 +218,7 @@ export const pagesRouter = new Hono<Ctx>()
     return c.json(await cleanup(c.env));
   });
 
-async function createPageHandler<T extends PageType>(type: T, c: Context<Ctx>, pageData: InsertPage<T>) {
+async function createPageHandler<T extends PageType>(type: T, c: Context<Ctx>, pageData: PageInput<T>) {
   const auth = getAuth(c);
   if (!auth) throw new ForbiddenError();
   const { createPage } = usePageService(c.env);

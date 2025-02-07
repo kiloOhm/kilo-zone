@@ -4,7 +4,7 @@ export function usePlatform(platform: Readonly<App.Platform> | undefined) {
   }
   console.log("Platform", platform);
   console.log({
-    globalThisFetch: globalThis.fetch,
+    globalFetch: fetch,
     platformFetch: platform.env.BACKEND?.fetch,
   });
   return {
@@ -13,9 +13,9 @@ export function usePlatform(platform: Readonly<App.Platform> | undefined) {
         fetch: import.meta.env.DEV
           ? async (input: RequestInfo, init?: RequestInit) => {
               if (typeof input === "string") {
-                return await globalThis.fetch("http://localhost:8787" + input, init);
+                return await fetch("http://localhost:8787" + input, init);
               } else if (input instanceof Request) {
-                return await globalThis.fetch(
+                return await fetch(
                   {
                     ...input,
                     url: "http://localhost:8787" + input.url,

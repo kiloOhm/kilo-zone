@@ -16,14 +16,13 @@ export const pageRouter = new Hono<Ctx>()
       })
     ),
     async (c) => {
-      const { getPages } = usePageService(c);
+      const { getPages } = usePageService(c.env);
       const { path } = c.req.valid("param");
-      const {
-        data: [page],
-      } = await getPages({
-        filter: { path },
-        pagination: { limit: 1 },
-      });
-      return c.json(page);
+      return c.json(
+        await getPages({
+          filter: { path },
+          pagination: { limit: 1 },
+        })
+      );
     }
   );

@@ -8,20 +8,20 @@ export const pageRouter = new Hono<Ctx>()
 
   // GET /:id
   .get(
-    "/:id",
+    "/:path",
     zValidator(
       "param",
       z.object({
-        id: z.string(),
+        path: z.string(),
       })
     ),
     async (c) => {
       const { getPages } = usePageService(c);
-      const { id } = c.req.valid("param");
+      const { path } = c.req.valid("param");
       const {
         data: [page],
       } = await getPages({
-        filter: { id },
+        filter: { path },
         pagination: { limit: 1 },
       });
       return c.json(page);

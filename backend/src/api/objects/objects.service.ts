@@ -15,10 +15,10 @@ type SignaturePayload = JWTPayload & {
   type: "download" | "upload";
 };
 
-export function useObjectsService(c: Context<Ctx>) {
-  const { setPasteMeta } = usePageService(c);
-  const { streamObject, uploadObject, removeObject } = useObjectStorage(c);
-  const signingSecret = c.env.OBJECT_STORAGE_SIGNING_SECRET;
+export function useObjectsService(env: Ctx["Bindings"]) {
+  const { setPasteMeta } = usePageService(env);
+  const { streamObject, uploadObject, removeObject } = useObjectStorage(env);
+  const signingSecret = env.OBJECT_STORAGE_SIGNING_SECRET;
   return bindMethods({
     async getSignedLink(key: string, ttl: number, type: "download" | "upload") {
       const now = Date.now() / 1000;
@@ -31,8 +31,8 @@ export function useObjectsService(c: Context<Ctx>) {
         signingSecret,
         "HS256"
       );
-      const protocol = c.env.DEV ? "http" : "https";
-      return `${protocol}://${c.env.HOSTNAME}/objects/${key}?signature=${signature}`;
+      const protocol = env.DEV ? "http" : "https";
+      return `${protocol}://${env.HOSTNAME}/objects/${key}?signature=${signature}`;
     },
     async download(pageId: string, signature: string | null) {
       if (signature !== null) {
@@ -47,7 +47,7 @@ export function useObjectsService(c: Context<Ctx>) {
         const { key, type } = (await verify(signature, signingSecret, "HS256")) as SignaturePayload;
         if (key !== pageId) throw new ForbiddenError("Invalid signature, key mismatch");
         if (type !== "upload") throw new ForbiddenError("Invalid signature, type mismatch");
-        if (file.size > c.env.MAX_FILE_SIZE) throw new BadRequestError("File too large, max size is 100MB");
+        if (file.size > env.MAX_FILE_SIZE) throw new BadRequestError("File too large, max size is 100MB");
       }
       //TODO: verify mimetype
       const [_, uploadedBytes] = await Promise.all([

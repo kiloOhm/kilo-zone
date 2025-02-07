@@ -29,8 +29,8 @@ import { drizzle } from "drizzle-orm/d1";
 
 const forbiddenPaths: string[] = [];
 
-export function usePageService(c: Context<Ctx>) {
-  const db = useDb(c);
+export function usePageService(env: Ctx["Bindings"]) {
+  const db = useDb(env);
   return bindMethods({
     async getPages(options: {
       filter: {
@@ -95,7 +95,7 @@ export function usePageService(c: Context<Ctx>) {
             case "paste":
               if (parsedPaste.status === "rejected") throw parsedPaste.reason;
               const data = parsedPaste.value ?? ({} as PageData<"paste">);
-              const { getSignedLink } = useObjectsService(c);
+              const { getSignedLink } = useObjectsService(env);
               data.uploadUrl = await getSignedLink(parsedPage.value.id, 1 * 60 * 60 * 1000, "upload"); // 1 hour
               return {
                 ...parsedPage.value,
@@ -221,7 +221,7 @@ export function usePageService(c: Context<Ctx>) {
             throw new Error("Failed to create paste page data");
           }
           if (!(data.data as InsertPageData<"paste">)?.direct) {
-            const { getSignedLink } = useObjectsService(c);
+            const { getSignedLink } = useObjectsService(env);
             const uploadUrl = await getSignedLink(id, 1 * 60 * 60 * 1000, "upload"); // 1 hour
             pageData = (await pastePageDataSelectSchema.parseAsync({
               ...newPastePageData,
@@ -306,7 +306,7 @@ export function usePageService(c: Context<Ctx>) {
         throw new Error("Failed to delete page");
       }
       //TODO: delete any associated chat instances etx
-      const { remove } = useObjectsService(c);
+      const { remove } = useObjectsService(env);
       try {
         await remove(...toBeDeleted.map(({ id }) => id));
       } catch {}

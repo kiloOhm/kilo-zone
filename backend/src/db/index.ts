@@ -1,7 +1,6 @@
-import { Context } from 'hono';
-import { Ctx } from '..';
-import { drizzle } from 'drizzle-orm/d1';
+import { Ctx } from "..";
+import { drizzle } from "drizzle-orm/d1";
 
-export function useDb(c: Context<Ctx>) {
-	return drizzle(c.env.KILO_ZONE_DB);
+export function useDb(env: Ctx["Bindings"]) {
+  return drizzle(env.KILO_ZONE_DB);
 }

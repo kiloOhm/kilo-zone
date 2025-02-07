@@ -13,7 +13,7 @@ export function useBackend(platform: App.Platform | undefined) {
         res = await fetch(`http://localhost:8787/page/${path}`);
         return res.ok ? await res.json() : null;
       } else {
-        return await platform.Env.BACKEND.page(path);
+        return await platform.env.BACKEND.page(path);
       }
     },
   });

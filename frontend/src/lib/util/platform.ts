@@ -1,8 +1,4 @@
-import {
-  Request,
-  type RequestInfo as cfRequestInfo,
-  type RequestInit as cfRequestInit,
-} from "@cloudflare/workers-types";
+import { type RequestInfo as cfRequestInfo, type RequestInit as cfRequestInit } from "@cloudflare/workers-types";
 
 export function usePlatform(platform: Readonly<App.Platform> | undefined) {
   if (!platform) {
@@ -32,9 +28,9 @@ export function usePlatform(platform: Readonly<App.Platform> | undefined) {
           : async (input: cfRequestInfo, init?: cfRequestInit) => {
               console.log("prod fetch", input, init);
               if (typeof input === "string") {
-                return await platform.env.BACKEND.fetch(new Request("https://api.kilo.zone" + input, init));
+                return await platform.env.BACKEND.fetch("https://api.kilo.zone" + input, init);
               } else if (input instanceof Request) {
-                return await platform.env.BACKEND.fetch(new Request("https://api.kilo.zone" + input.url, input));
+                return await platform.env.BACKEND.fetch("https://api.kilo.zone" + input.url, input);
               }
             },
       },

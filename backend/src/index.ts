@@ -8,6 +8,7 @@ import { startTimer, stopAllRunningTimers } from "./util/timing";
 export { ChatHandlerDO } from "./durableObjects/ChatHandlerDO";
 import * as PostalMime from "postal-mime";
 import { cleanup } from "./api/pages/pages.service";
+import { WorkerEntrypoint } from "cloudflare:workers";
 
 type Secrets = {
   RATE_LIMIT_SKIP_SECRET: string;
@@ -60,6 +61,15 @@ service.route("/auth", authRouter);
 service.route("/", apiRouter);
 
 service.onError(errorHandler);
+
+export class RPC extends WorkerEntrypoint {
+  async page(path: string) {
+    return {
+      path,
+      title: "Hello, World!",
+    };
+  }
+}
 
 export default {
   fetch: service.fetch,

@@ -1,4 +1,4 @@
-import { Service } from "@cloudflare/workers-types";
+import { RPC } from "../../backend/src/index";
 
 // See https://svelte.dev/docs/kit/types#app.d.ts
 // for information about these interfaces
@@ -9,8 +9,8 @@ declare global {
     // interface PageData {}
     // interface PageState {}
     interface Platform {
-      env: {
-        BACKEND: Service;
+      Env: {
+        BACKEND: RPC;
       };
     }
   }

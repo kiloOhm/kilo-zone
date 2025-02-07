@@ -1,0 +1,6 @@
+name = "kilo-zone-frontend"
+
+[[services]]
+binding = "BACKEND"
+service = "kilo-zone-backend"
+entrypoint = "RPC"

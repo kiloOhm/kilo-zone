@@ -1,18 +1,19 @@
 import { bindMethods } from "./util/js";
+import type { Response as cfResponse } from "@cloudflare/workers-types";
+
+type Res = cfResponse | Response;
 
 export function useBackend(platform: App.Platform | undefined) {
   const dev = import.meta.env.DEV;
-  const baseUrl = dev ? "http://localhost:8787" : "https://api.kilo.zone";
   if (!platform) throw new Error("Platform is required");
   return bindMethods({
     async getPageData(path: string) {
-      const url = new URL(`${baseUrl}/page/${path}`);
+      let res: Res | null = null;
       if (dev) {
-        const res = await fetch(url);
+        res = await fetch(`http://localhost:8787/page/${path}`);
         return res.ok ? await res.json() : null;
       } else {
-        const res = await platform.env.BACKEND.fetch(url);
-        return res.ok ? await res.json() : null;
+        return await platform.Env.BACKEND.page(path);
       }
     },
   });

@@ -8,7 +8,7 @@ export const load: PageServerLoad = async ({ params, platform }) => {
   let pageData;
   const res = await BACKEND.fetch("/page/" + params.path);
   if (!res || !res.ok) {
-    console.error("Failed to load page data", res);
+    console.error("Failed to load page data", JSON.stringify(res, null, 2));
   } else {
     pageData = await res.json();
   }

@@ -1,0 +1,22 @@
+{
+  "name": "kilo-zone-cli",
+  "module": "index.ts",
+  "type": "module",
+  "scripts": {
+    "start": "bun run index.ts",
+    "compile:darwin-arm64": "bun build ./index.ts --target=bun-darwin-arm64 --compile --outfile bin/darwin-arm64/kz",
+    "compile:win-x64": "bun build ./index.ts --target=bun-windows-x64 --compile --outfile bin/win-x64/kz.exe",
+    "compile:linux-x64": "bun build ./index.ts --target=bun-linux-x64 --compile --outfile bin/linux-x64/kz"
+  },
+  "devDependencies": {
+    "@types/bun": "latest",
+    "@types/jsonwebtoken": "9.0.8",
+    "typescript": "^5.7.3"
+  },
+  "dependencies": {
+    "hono": "^4.7.0",
+    "jsonwebtoken": "9.0.2",
+    "keytar": "7.9.0",
+    "zod": "3.24.1"
+  }
+}

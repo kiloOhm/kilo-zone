@@ -1,0 +1,11 @@
+{
+  "name": "kilo-zone",
+  "private": true,
+  "workspaces": [
+    "apps/*",
+    "packages/*"
+  ],
+  "devDependencies": {
+    "typescript": "^5.7.3"
+  }
+}

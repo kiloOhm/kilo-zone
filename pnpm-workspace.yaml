@@ -1,0 +1,3 @@
+packages:
+  - apps/* # Your actual projects (SvelteKit, Wrangler API, Bun CLI)
+  - packages/* # Shared libraries (e.g., utils, types)
